@@ -1,4 +1,4 @@
-# Cloud Project 4
+# Cloud Project 
 
 ## Build a Serverless Employee Management Application on AWS
 
