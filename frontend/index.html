@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>People Ledger | Employee Management</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Cloud Project 3</p>
+        <h1>People Ledger</h1>
+        <p class="subtitle">A focused workspace for keeping employee records accurate and current.</p>
+      </div>
+      <div class="status-pill" id="connection-status" aria-live="polite">
+        <span class="status-dot"></span>
+        Demo mode
+      </div>
+    </header>
+
+    <section class="summary-grid" aria-label="Employee summary">
+      <article class="summary-card accent-blue">
+        <span class="summary-label">Total employees</span>
+        <strong id="employee-count">0</strong>
+      </article>
+      <article class="summary-card accent-gold">
+        <span class="summary-label">Departments</span>
+        <strong id="department-count">0</strong>
+      </article>
+      <article class="summary-card accent-green">
+        <span class="summary-label">Latest joining date</span>
+        <strong id="latest-joining-date">—</strong>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Directory</p>
+          <h2>Employee records</h2>
+        </div>
+        <button class="button button-primary" id="new-employee-button" type="button">+ Add employee</button>
+      </div>
+
+      <div class="toolbar">
+        <label class="search-field" for="search-input">
+          <span aria-hidden="true">⌕</span>
+          <input id="search-input" type="search" placeholder="Search by name, department, or email" autocomplete="off">
+        </label>
+        <span class="record-count" id="visible-count">0 records</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Employee</th>
+              <th scope="col">Department</th>
+              <th scope="col">Designation</th>
+              <th scope="col">Joining date</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="employee-list"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon" aria-hidden="true">+</div>
+          <h3>No employee records yet</h3>
+          <p>Add your first employee to start building the directory.</p>
+          <button class="button button-secondary" id="empty-add-button" type="button">Add employee</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="employee-dialog">
+    <form id="employee-form" method="dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Employee record</p>
+          <h2 id="dialog-title">Add employee</h2>
+        </div>
+        <button class="icon-button" id="close-dialog-button" type="button" aria-label="Close dialog">×</button>
+      </div>
+      <input id="employee-id" type="hidden">
+      <div class="form-grid">
+        <label>
+          Name
+          <input id="name" name="name" type="text" required maxlength="100" placeholder="e.g. Maya Patel">
+        </label>
+        <label>
+          Email
+          <input id="email" name="email" type="email" required maxlength="150" placeholder="maya@example.com">
+        </label>
+        <label>
+          Department
+          <input id="department" name="department" type="text" required maxlength="80" placeholder="e.g. Engineering">
+        </label>
+        <label>
+          Designation
+          <input id="designation" name="designation" type="text" required maxlength="100" placeholder="e.g. Product Manager">
+        </label>
+        <label class="full-width">
+          Joining date
+          <input id="joining-date" name="joiningDate" type="date" required>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" id="cancel-button" type="button">Cancel</button>
+        <button class="button button-primary" type="submit">Save employee</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
