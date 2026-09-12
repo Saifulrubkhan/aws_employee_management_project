@@ -173,3 +173,7 @@ The completed solution should be a secure and scalable serverless employee manag
 | Amazon CloudWatch | Collects logs, metrics, and alarms |
 | Amazon SNS | Sends operational notifications |
 | AWS IAM | Controls least-privilege service access |
+
+## Documentation
+
+For the backend build and AWS configuration details, see [backend/README.md](backend/README.md).
