@@ -1,5 +1,9 @@
-const API_BASE_URL = '';
+const API_BASE_URL = 'https://erwk803l40.execute-api.us-east-1.amazonaws.com/prod';
+const COGNITO_DOMAIN = 'https://us-east-1bbtxoe8nm.auth.us-east-1.amazoncognito.com';
+const COGNITO_CLIENT_ID = '2gk27p1kl8cclipgsa5s55spfj';
+const REDIRECT_URI = `${window.location.origin}/`;
 const STORAGE_KEY = 'people-ledger-employees';
+let accessToken = sessionStorage.getItem('access-token');
 
 const sampleEmployees = [
   {
@@ -67,6 +71,7 @@ function render() {
 
   elements.list.innerHTML = visibleEmployees.map(employee => `
     <tr>
+      <td><span class="employee-id">${escapeHtml(employee.employeeId)}</span></td>
       <td><span class="employee-name">${escapeHtml(employee.name)}</span><span class="employee-email">${escapeHtml(employee.email)}</span></td>
       <td>${escapeHtml(employee.department)}</td>
       <td>${escapeHtml(employee.designation)}</td>
@@ -96,10 +101,52 @@ function openForm(employee = null) {
   }
   elements.dialog.showModal();
 }
+async function exchangeCodeForToken() {
+  const code = new URLSearchParams(window.location.search).get('code');
+
+  if (!code || accessToken) return;
+
+  const response = await fetch(`${COGNITO_DOMAIN}/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: COGNITO_CLIENT_ID,
+      code,
+      redirect_uri: REDIRECT_URI
+    })
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Authentication failed with status ${response.status}: ${errorBody}`);
+  }
+
+  const tokens = await response.json();
+  accessToken = tokens.id_token;
+  sessionStorage.setItem('access-token', accessToken);
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+function redirectToLogin() {
+  const loginUrl = new URL(`${COGNITO_DOMAIN}/login`);
+  loginUrl.search = new URLSearchParams({
+    client_id: COGNITO_CLIENT_ID,
+    response_type: 'code',
+    scope: 'openid email phone',
+    redirect_uri: REDIRECT_URI
+  });
+  window.location.assign(loginUrl);
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+  'Content-Type': 'application/json',
+  ...(accessToken ? { Authorization: accessToken } : {})
+},
     ...options
   });
   if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
@@ -175,10 +222,25 @@ elements.list.addEventListener('click', event => {
   if (button.dataset.action === 'delete') deleteEmployee(button.dataset.id);
 });
 
-if (API_BASE_URL) {
-  elements.status.classList.add('api-mode');
-  elements.status.innerHTML = '<span class="status-dot"></span> API connected';
-  request('/employees').then(data => { employees = data; render(); }).catch(() => showToast('Could not load employees from the API'));
-}
+(async function initialize() {
+  try {
+    const hasCode = new URLSearchParams(window.location.search).has('code');
+    if (!accessToken && !hasCode) {
+      elements.status.textContent = 'Redirecting to sign in...';
+      redirectToLogin();
+      return;
+    }
 
-render();
+    await exchangeCodeForToken();
+
+    if (API_BASE_URL && accessToken) {
+      elements.status.classList.add('api-mode');
+      elements.status.innerHTML = '<span class="status-dot"></span> API connected';
+      employees = await request('/employees');
+    }
+
+    render();
+  } catch (error) {
+    showToast(error.message);
+  }
+})();

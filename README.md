@@ -173,3 +173,42 @@ The completed solution should be a secure and scalable serverless employee manag
 | Amazon CloudWatch | Collects logs, metrics, and alarms |
 | Amazon SNS | Sends operational notifications |
 | AWS IAM | Controls least-privilege service access |
+
+## Production Frontend Hosting
+
+The frontend is hosted in Amazon S3 and delivered through Amazon CloudFront. A local web server is not required for the production application.
+
+### Production URLs
+
+- Application: `https://app.khansaiful.com/`
+- CloudFront distribution: `https://d10we6vi99dsld.cloudfront.net/`
+- S3 bucket: `employee-management-9876`
+
+### Deploy the frontend
+
+From the project root, synchronize the static frontend files to S3:
+
+```bash
+aws s3 sync frontend/ s3://employee-management-9876
+```
+
+Invalidate the CloudFront cache after changing `index.html`, `app.js`, or `styles.css`:
+
+```bash
+aws cloudfront create-invalidation \
+	--distribution-id E2FM2XQERX0DGO \
+	--paths '/index.html' '/app.js' '/styles.css'
+```
+
+Users should open `https://app.khansaiful.com/`. The frontend calls the remote API Gateway endpoint, while S3 and CloudFront serve the HTML, CSS, and JavaScript files.
+
+### Cognito callback URLs
+
+The Cognito app client must allow the exact production URLs below:
+
+```text
+https://app.khansaiful.com/
+https://d10we6vi99dsld.cloudfront.net/
+```
+
+These URLs must be configured as both allowed callback URLs and allowed sign-out URLs. The local callback URL is only needed for local development and is not required for production hosting.
