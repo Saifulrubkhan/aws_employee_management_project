@@ -21,10 +21,6 @@ Create a complete serverless employee management application using:
 
 ## Architecture
 
-The canonical, editable diagram is [aws-employee-management-architecture.drawio](aws-employee-management-architecture.drawio). It uses the AWS4 shape library in Draw.io for the official AWS service icons.
-
-Open it with [Draw.io / diagrams.net](https://app.diagrams.net/) to view or update the diagram.
-
 ```mermaid
 flowchart LR
     User[Employee app user] -->|DNS lookup| Route53[Amazon Route 53]
