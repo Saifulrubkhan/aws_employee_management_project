@@ -4,16 +4,20 @@ This guide explains how to build the serverless employee management application 
 
 ## Architecture
 
+The canonical editable AWS architecture is [../aws-employee-management-architecture.drawio](../aws-employee-management-architecture.drawio). It uses the official AWS service-icon library in Draw.io.
+
 ```mermaid
-flowchart TD
-    User[User] --> Domain[app.khansaiful.com]
+flowchart LR
+    User[User] --> Domain[Route 53: app.khansaiful.com]
     Domain --> CloudFront[Amazon CloudFront]
-    CloudFront --> S3[Amazon S3 frontend]
-    S3 --> Cognito[Amazon Cognito authentication]
-    Cognito --> APIGateway[Amazon API Gateway]
+    CloudFront -->|OAC| S3[Private S3 frontend]
+    User -->|Sign in| Cognito[Amazon Cognito]
+    User -->|JWT API request| APIGateway[Amazon API Gateway]
+    APIGateway -. Cognito authorizer .-> Cognito
     APIGateway --> Lambda[AWS Lambda CRUD functions]
     Lambda --> DynamoDB[Amazon DynamoDB Employees table]
-    Lambda --> CloudWatch[Amazon CloudWatch Logs and metrics]
+    Lambda --> CloudWatch[Amazon CloudWatch logs]
+    APIGateway --> CloudWatch
     CloudWatch --> Alarms[CloudWatch alarms]
     Alarms --> SNS[Amazon SNS notifications]
 ```

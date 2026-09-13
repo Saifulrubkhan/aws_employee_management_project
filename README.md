@@ -19,6 +19,31 @@ Create a complete serverless employee management application using:
 - Amazon CloudWatch
 - Amazon SNS
 
+## Architecture
+
+The canonical, editable diagram is [aws-employee-management-architecture.drawio](aws-employee-management-architecture.drawio). It uses the AWS4 shape library in Draw.io for the official AWS service icons.
+
+Open it with [Draw.io / diagrams.net](https://app.diagrams.net/) to view or update the diagram.
+
+```mermaid
+flowchart LR
+    User[Employee app user] -->|DNS lookup| Route53[Amazon Route 53]
+    Route53 -->|Alias record| CloudFront[Amazon CloudFront]
+    CloudFront -->|Origin Access Control| S3[Private Amazon S3 bucket]
+    User -->|Sign in| Cognito[Amazon Cognito user pool]
+    User -->|HTTPS API request + JWT| API[Amazon API Gateway REST API]
+    API -. Cognito authorizer .-> Cognito
+    API -->|Lambda proxy integration| Lambda[AWS Lambda CRUD functions]
+    Lambda -->|CRUD| DynamoDB[Amazon DynamoDB Employees table]
+    Lambda -->|Logs| CloudWatch[Amazon CloudWatch]
+    API -->|Metrics| CloudWatch
+    CloudWatch -->|Alarm| SNS[Amazon SNS]
+    SNS -->|Email alert| Admin[Operations admin]
+    IAM[AWS IAM execution roles] -. least-privilege access .-> Lambda
+```
+
+The editable diagram also documents the ACM certificate, CloudFront HTTPS/OAC settings, API routes, DynamoDB encryption, per-function IAM roles, and the Lambda-error alarm path.
+
 ## Technical Requirements
 
 ### 1. Frontend
@@ -90,22 +115,6 @@ Configure observability with:
 - CloudWatch alarms for Lambda errors
 - API Gateway metrics for request volume, latency, and failures
 - Amazon SNS notifications for operational alerts
-
-## Architecture Flow
-
-```mermaid
-flowchart TD
-	User[Authenticated User] --> CloudFront[Amazon CloudFront]
-	CloudFront --> S3[Amazon S3 Frontend]
-	S3 --> Cognito[Amazon Cognito]
-	Cognito --> APIGW[Amazon API Gateway]
-	APIGW --> Lambda[AWS Lambda]
-	Lambda --> DynamoDB[Amazon DynamoDB]
-	Lambda --> CloudWatch[Amazon CloudWatch Logs]
-	APIGW --> Metrics[API Gateway Metrics]
-	CloudWatch --> Alarms[CloudWatch Alarms]
-	Alarms --> SNS[Amazon SNS Notifications]
-```
 
 ### Request Flow
 
